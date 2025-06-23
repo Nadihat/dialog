@@ -1,70 +1,110 @@
 (story title) Ruby Adventure
-(story subtitle) A Choose Your Own Adventure
+(story author) Anonymous
 
-(current player #cave)
+#player
+(current player *)
+(* is #in #cave)
 
-%%-------------------------------------------------
-%% LOCATIONS
-%%-------------------------------------------------
+%% ===============================================================
+%%  1. THE ROOMS AND MAP
+%% ===============================================================
 
-%% Define the cave (starting location)
-(room #cave)
-(name #cave) Cave
-(descr #cave)
-	You are in a dark cave.
-	A path splits to the left and right.
+%% The Cave (starting location)
+#cave
+(room *)
+(name *) dark cave
+(descr *)
+	You are in a dark cave. The air is damp and cold.
+	A path splits, leading west and east into the gloom.
 
-(choice #cave) Go left
-(perform [Go left])
-	(now) (current player #left-path)
+%% We map "go left" to WEST and "go right" to EAST.
+(from * go #west to #left-path)
+(from * go #east to #right-path)
 
-(choice #cave) Go right
-(perform [Go right])
-	(now) (current player #right-path)
+%% The Left Path
+#left-path
+(room *)
+(name *) end of the left path
+(descr *)
+	You've walked down the left path and find it ends here.
+	In the center of the dusty floor sits a single treasure chest.
 
+(from * go #east to #cave) %% Path back to the cave
 
-%% Define the left path
-(room #left-path)
-(name #left-path) Left Path
-(descr #left-path)
-	You walk down the left path and find a treasure chest.
+%% The Right Path
+#right-path
+(room *)
+(name *) end of the right path
+(descr *)
+	You follow the right path and see a faint, hopeful light ahead.
+	The shadows here feel deep and menacing.
 
-(choice #left-path) Open the chest
-(perform [Open the chest])
-	It's a trap! A poisoned dart flies out. You lose.
+(from * go #west to #cave) %% Path back to the cave
+
+%% ===============================================================
+%%  2. OBJECTS IN THE WORLD
+%% ===============================================================
+
+#chest
+(name *) treasure chest
+(descr *) It is a large, wooden chest, bound with iron straps. It looks very old.
+(* is #in #left-path)
+(openable *) %% Makes the [open] action valid for this object.
+
+%% ===============================================================
+%%  3. PUZZLES AND ACTIONS
+%% ===============================================================
+
+%% --- On the Left Path ---
+
+(perform [open #chest])
+	As you touch the lid, you hear a soft *click*. It wasn't locked.
+	But as you open it, a poisoned dart flies out from a hidden mechanism and strikes you.
+	(par)
+	It was a trap! You lose.
 	(game over)
 
-(choice #left-path) Leave it alone
-(perform [Leave it alone])
-	A dragon was guarding the chest! You lose.
-	(game over)
+%% If the player does anything other than open the chest, they lose.
+%% (on every tick) fires after every action.
+(on every tick in #left-path)
+	(if) ~(#chest is open) (then) %% if the chest has not been opened yet
+		A low growl echoes from the darkness behind the chest. A dragon
+		was guarding it! It lunges. You lose.
+		(game over)
+	(endif)
 
+%% --- On the Right Path ---
 
-%% Define the right path
-(room #right-path)
-(name #right-path) Right Path
-(descr #right-path)
-	You follow the right path and see a faint light ahead.
+%% Create a custom action for going towards the light
+(grammar [go towards light] for [approach light])
 
-(choice #right-path) Go towards the light
-(perform [Go towards the light])
-	The light is the sun! You have found the exit! You win!
-	(win)
+(perform [approach light])
+	(if) (current room #right-path) (then)
+		You step out of the shadows and walk towards the glow. The air grows warmer.
+		The light is the sun! You have found the exit!
+		(par)
+		You win!
+		(win)
+	(else)
+		There is no light to approach here.
+	(endif)
 
-(choice #right-path) Stay in the shadows
-(perform [Stay in the shadows])
-	You wait in the dark and are eaten by a grue. You lose.
-	(game over)
+%% The standard "wait" action is a death sentence here.
+(perform [wait])
+	(if) (current room #right-path) (then)
+		You decide to wait in the shadows for a moment. A foolish choice.
+		You hear a faint shuffling sound, and then you are eaten by a grue.
+		(par)
+		You lose.
+		(game over)
+	(endif)
 
+%% ===============================================================
+%%  4. GAME ENDINGS
+%% ===============================================================
 
-%%-------------------------------------------------
-%% GAME ENDINGS
-%%-------------------------------------------------
-
-%% Win condition
 (win)
 (story ending) Congratulations! You have escaped the cave!
 
-%% Game over condition
 (game over)
 (story ending) Better luck next time!
