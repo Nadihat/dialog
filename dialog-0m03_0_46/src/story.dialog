@@ -1,0 +1,70 @@
+(story title) Ruby Adventure
+(story subtitle) A Choose Your Own Adventure
+
+(current player #cave)
+
+%%-------------------------------------------------
+%% LOCATIONS
+%%-------------------------------------------------
+
+%% Define the cave (starting location)
+(room #cave)
+(name #cave) Cave
+(descr #cave)
+	You are in a dark cave.
+	A path splits to the left and right.
+
+(choice #cave) Go left
+(perform [Go left])
+	(now) (current player #left-path)
+
+(choice #cave) Go right
+(perform [Go right])
+	(now) (current player #right-path)
+
+
+%% Define the left path
+(room #left-path)
+(name #left-path) Left Path
+(descr #left-path)
+	You walk down the left path and find a treasure chest.
+
+(choice #left-path) Open the chest
+(perform [Open the chest])
+	It's a trap! A poisoned dart flies out. You lose.
+	(game over)
+
+(choice #left-path) Leave it alone
+(perform [Leave it alone])
+	A dragon was guarding the chest! You lose.
+	(game over)
+
+
+%% Define the right path
+(room #right-path)
+(name #right-path) Right Path
+(descr #right-path)
+	You follow the right path and see a faint light ahead.
+
+(choice #right-path) Go towards the light
+(perform [Go towards the light])
+	The light is the sun! You have found the exit! You win!
+	(win)
+
+(choice #right-path) Stay in the shadows
+(perform [Stay in the shadows])
+	You wait in the dark and are eaten by a grue. You lose.
+	(game over)
+
+
+%%-------------------------------------------------
+%% GAME ENDINGS
+%%-------------------------------------------------
+
+%% Win condition
+(win)
+(story ending) Congratulations! You have escaped the cave!
+
+%% Game over condition
+(game over)
+(story ending) Better luck next time!
